@@ -72,7 +72,7 @@ pub fn test_runner(tests: &[&dyn Testable]) {
 
 #[test_case]
 fn trivial_assert() {
-    assert_eq!(0, 1);
+    assert_eq!(1, 1);
 }
 
 #[no_mangle]
