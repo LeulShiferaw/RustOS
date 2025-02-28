@@ -1,15 +1,12 @@
 #![no_std]
 #![no_main]
-
-//For testing part
 #![feature(custom_test_frameworks)]
-#![test_runner(crate::test_runner)]
+#![test_runner(blog_os::test_runner)]
 #![reexport_test_harness_main = "test_main"]
 
 use core::panic::PanicInfo;
+use blog_os::println;
 
-mod vga_buffer;
-mod serial;
 
 #[cfg(not(test))]
 #[panic_handler]
@@ -21,53 +18,7 @@ fn panic(info: &PanicInfo) -> ! {
 #[cfg(test)]
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
-    serial_println!("[failed]\n");
-    serial_println!("Error: {}\n", info);
-    exit_qemu(QemuExitCode::Failed);
-    loop {}
-}
-
-pub trait Testable {
-    fn run(&self) -> ();
-}
-
-impl<T> Testable for T
-where T:Fn(),
-{
-    fn run(&self) {
-        serial_print!("{}...\t", core::any::type_name::<T>());
-        self();
-        serial_println!("[ok]");
-    }
-}
-
-//For exiting purposes
-//We need to exit after tests
-//We create a port-mapped io port for exiting
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[repr(u32)]
-pub enum QemuExitCode {
-    Success=0x10,
-    Failed=0x11,
-}
-
-pub fn exit_qemu(exit_code : QemuExitCode) {
-    use x86_64::instructions::port::Port;
-
-    unsafe {
-        let mut port = Port::new(0xf4);
-        port.write(exit_code as u32);
-    }
-}
-
-//For testing purposes
-#[cfg(test)]
-pub fn test_runner(tests: &[&dyn Testable]) {
-    serial_println!("Running {} tests", tests.len());
-    for test in tests {
-        test.run();
-    }
-    exit_qemu(QemuExitCode::Success);
+    blog_os::test_panic_handler(info)
 }
 
 #[test_case]
@@ -77,7 +28,7 @@ fn trivial_assert() {
 
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
-    print!("Hello World {}\nWHEN\n", "!");
+    println!("Hello World {}\nWHEN\n", "!");
 
     #[cfg(test)]
     test_main();
