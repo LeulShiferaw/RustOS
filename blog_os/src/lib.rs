@@ -1,6 +1,7 @@
 // in src/lib.rs
 
 #![no_std]
+#![feature(abi_x86_interrupt)]  //For interrupts to work
 #![cfg_attr(test, no_main)]
 #![feature(custom_test_frameworks)]
 #![test_runner(crate::test_runner)]
@@ -10,6 +11,7 @@ use core::panic::PanicInfo;
 
 pub mod vga_buffer;
 pub mod serial;
+pub mod interrupts; //For interrupts
 
 pub trait Testable {
     fn run(&self) -> ();
@@ -39,6 +41,11 @@ pub fn test_panic_handler(info: &PanicInfo) -> ! {
     serial_println!("Error: {}\n", info);
     exit_qemu(QemuExitCode::Failed);
     loop {}
+}
+
+//Interrupts code
+pub fn init() {
+    interrupts::init_idt();
 }
 
 /// Entry point for `cargo test`
