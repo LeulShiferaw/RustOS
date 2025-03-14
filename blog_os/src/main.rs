@@ -6,6 +6,7 @@
 
 use core::panic::PanicInfo;
 use blog_os::println;
+use blog_os::print;
 
 
 #[cfg(not(test))]
@@ -28,14 +29,18 @@ fn trivial_assert() {
 
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
-    println!("Hello World {}\nWHEN\n", "!");
+    println!("Hello World {}\n", "!");
 
     blog_os::init();
 
     #[cfg(test)]
     test_main();
 
-    loop {}
+    println!("It did not crash!");
+    
+    loop {
+        print!("-");
+    }
 }
 
 
