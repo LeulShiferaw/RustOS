@@ -9,10 +9,17 @@
 
 use core::panic::PanicInfo;
 
+#[cfg(test)]
+use bootloader::{BootInfo, entry_point};
+
 pub mod vga_buffer;
 pub mod serial;
 pub mod interrupts; //For interrupts
 pub mod gdt;
+pub mod memory;
+
+#[cfg(test)]
+entry_point!(test_kernel_main);
 
 pub trait Testable {
     fn run(&self) -> ();
@@ -41,6 +48,13 @@ pub fn test_panic_handler(info: &PanicInfo) -> ! {
     serial_println!("[failed]\n");
     serial_println!("Error: {}\n", info);
     exit_qemu(QemuExitCode::Failed);
+    hlt_loop();
+}
+
+#[cfg(test)]
+fn test_kernel_main(_boot_info: &'static BootInfo) -> ! {
+    init();
+    test_main();
     hlt_loop();
 }
 
